@@ -1,0 +1,21 @@
+
+<h2>Criar Conta</h2>
+<input id="email" placeholder="Email"><br>
+<input id="password" type="password" placeholder="Senha"><br>
+<button onclick="register()">Registrar</button>
+
+<script>
+async function register(){
+  const res = await fetch('/api/register',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      email:email.value,
+      password:password.value
+    })
+  });
+  const data = await res.json();
+  if(data.success){ alert('Conta criada com plano BÁSICO R$6'); location.href='/login.html'; }
+  else alert(data.error);
+}
+</script>
