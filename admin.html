@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — BotCloud</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Cabinet+Grotesk:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#04060a;--surface:#0a0d15;--surface2:#10151f;--border:#182030;--green:#00e87a;--green-glow:rgba(0,232,122,0.1);--blue:#5b8fff;--red:#ff3d55;--yellow:#ffcc00;--purple:#a855f7;--text:#e8f0ff;--muted:#4a6080;--mono:'Space Mono',monospace;--sans:'Cabinet Grotesk',sans-serif;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;display:flex;}
+
+/* LOGIN SCREEN */
+#loginScreen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center;}
+#loginScreen::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);background-size:50px 50px;}
+.admin-login-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px;width:380px;text-align:center;position:relative;z-index:1;}
+.admin-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.3);border-radius:6px;padding:4px 12px;font-family:var(--mono);font-size:10px;color:var(--purple);letter-spacing:2px;margin-bottom:20px;}
+.admin-login-title{font-size:24px;font-weight:900;margin-bottom:4px;}
+.admin-login-sub{font-size:13px;color:var(--muted);margin-bottom:24px;}
+.admin-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-family:var(--sans);font-size:13px;color:var(--text);outline:none;margin-bottom:12px;transition:border-color .2s;}
+.admin-input:focus{border-color:var(--purple);}
+.admin-input::placeholder{color:var(--muted);}
+.admin-btn{width:100%;padding:13px;border-radius:8px;background:var(--purple);color:#fff;font-family:var(--sans);font-size:15px;font-weight:800;border:none;cursor:pointer;transition:all .2s;}
+.admin-btn:hover{filter:brightness(1.1);box-shadow:0 0 20px rgba(168,85,247,0.3);}
+.admin-err{font-size:12px;color:var(--red);margin-top:8px;display:none;}
+
+/* SIDEBAR */
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+.logo-area{padding:18px;border-bottom:1px solid var(--border);}
+.logo{font-size:18px;font-weight:900;color:var(--green);}
+.logo span{color:var(--text);}
+.admin-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(168,85,247,0.15);border-radius:4px;padding:2px 8px;font-family:var(--mono);font-size:9px;color:var(--purple);margin-top:4px;letter-spacing:1px;}
+
+nav{padding:8px 0;flex:1;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 18px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);border-left:3px solid transparent;transition:all .15s;}
+.nav-item:hover{color:var(--text);background:#ffffff05;}
+.nav-item.active{color:var(--green);background:var(--green-glow);border-left-color:var(--green);}
+.nav-icon{font-size:15px;width:18px;text-align:center;}
+
+.sidebar-admin{padding:14px 18px;border-top:1px solid var(--border);}
+.admin-info{font-family:var(--mono);font-size:10px;color:var(--muted);}
+.admin-info b{color:var(--purple);}
+.logout-btn{display:block;margin-top:10px;font-size:12px;color:var(--red);cursor:pointer;background:none;border:none;font-family:var(--sans);text-align:left;padding:0;}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.page-title{font-size:17px;font-weight:900;}
+.page-sub{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:1px;}
+.topbar-right{display:flex;gap:10px;align-items:center;}
+.btn{padding:8px 16px;border-radius:7px;font-family:var(--sans);font-weight:700;font-size:12px;cursor:pointer;border:none;transition:all .2s;}
+.btn-green{background:var(--green);color:#000;}
+.btn-green:hover{filter:brightness(1.1);}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text);}
+.btn-ghost:hover{border-color:var(--green);color:var(--green);}
+.btn-purple{background:var(--purple);color:#fff;}
+.btn-purple:hover{filter:brightness(1.1);}
+
+.content{flex:1;overflow-y:auto;padding:20px 22px;}
+.content::-webkit-scrollbar{width:4px;}
+.content::-webkit-scrollbar-thumb{background:var(--border);}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.stat-label{font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:2px;margin-bottom:6px;}
+.stat-val{font-size:24px;font-weight:900;line-height:1;}
+.stat-sub{font-size:10px;color:var(--muted);margin-top:3px;}
+.stat.g .stat-val{color:var(--green);}
+.stat.b .stat-val{color:var(--blue);}
+.stat.y .stat-val{color:var(--yellow);}
+.stat.p .stat-val{color:var(--purple);}
+.stat.r .stat-val{color:var(--red);}
+
+/* TABLES */
+.section-title{font-size:13px;font-weight:800;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px;}
+.table-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.table-title{font-size:14px;font-weight:800;}
+.search-inp{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 12px;font-family:var(--mono);font-size:11px;color:var(--text);outline:none;width:180px;}
+.search-inp:focus{border-color:var(--green);}
+.search-inp::placeholder{color:var(--muted);}
+table{width:100%;border-collapse:collapse;}
+th{padding:10px 18px;font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;text-align:left;font-family:var(--mono);border-bottom:1px solid var(--border);}
+td{padding:12px 18px;font-size:13px;border-bottom:1px solid var(--border);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--surface2);}
+
+.badge{padding:3px 10px;border-radius:20px;font-family:var(--mono);font-size:10px;font-weight:700;}
+.badge.active{background:#00e87a15;color:var(--green);}
+.badge.inactive{background:#ff3d5515;color:var(--red);}
+.badge.trial{background:#ffcc0015;color:var(--yellow);}
+.badge.pro{background:#5b8fff15;color:var(--blue);}
+.badge.starter{background:#4a608020;color:var(--muted);}
+.badge.enterprise{background:rgba(168,85,247,0.15);color:var(--purple);}
+
+.action-btn{padding:4px 10px;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid;transition:all .2s;font-family:var(--sans);}
+.action-btn.block{border-color:var(--red);color:var(--red);background:transparent;}
+.action-btn.block:hover{background:var(--red);color:#fff;}
+.action-btn.unblock{border-color:var(--green);color:var(--green);background:transparent;}
+.action-btn.unblock:hover{background:var(--green);color:#000;}
+.action-btn.view{border-color:var(--border);color:var(--muted);background:transparent;}
+.action-btn.view:hover{border-color:var(--blue);color:var(--blue);}
+
+/* REVENUE */
+.revenue-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.rev-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;}
+.rev-title{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;font-family:var(--mono);margin-bottom:14px;}
+.rev-big{font-size:36px;font-weight:900;color:var(--green);margin-bottom:4px;}
+.rev-sub{font-size:12px;color:var(--muted);}
+.rev-chart{display:flex;align-items:flex-end;gap:6px;height:60px;margin-top:16px;}
+.rev-bar{flex:1;background:var(--green);border-radius:3px 3px 0 0;opacity:.7;transition:opacity .2s;}
+.rev-bar:hover{opacity:1;}
+
+/* NOTIFICATIONS */
+.notif-list{display:flex;flex-direction:column;gap:8px;}
+.notif{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;}
+.notif-ico{font-size:18px;flex-shrink:0;}
+.notif-text{font-size:13px;flex:1;}
+.notif-sub{font-size:11px;color:var(--muted);margin-top:2px;font-family:var(--mono);}
+.notif.alert{border-left:3px solid var(--red);}
+.notif.info{border-left:3px solid var(--blue);}
+.notif.success{border-left:3px solid var(--green);}
+
+/* MP CONFIG */
+.mp-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;}
+.mp-title{font-size:15px;font-weight:800;margin-bottom:4px;}
+.mp-sub{font-size:13px;color:var(--muted);margin-bottom:18px;}
+.mp-form{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+.form-label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.form-input{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-family:var(--sans);font-size:13px;color:var(--text);outline:none;transition:border-color .2s;}
+.form-input:focus{border-color:var(--green);}
+.form-input::placeholder{color:var(--muted);}
+</style>
+</head>
+<body>
+
+<!-- LOGIN ADMIN -->
+<div id="loginScreen">
+  <div class="admin-login-box">
+    <div class="admin-tag">🔐 ÁREA RESTRITA</div>
+    <div class="admin-login-title">Painel Admin</div>
+    <div class="admin-login-sub">Acesso exclusivo para administradores BotCloud</div>
+    <input class="admin-input" id="adminEmail" type="email" placeholder="Email do admin" value="jefersonrotello@gmail.com" />
+    <input class="admin-input" id="adminPass" type="password" placeholder="Senha" onkeydown="if(event.key==='Enter')adminLogin()" />
+    <button class="admin-btn" onclick="adminLogin()">Entrar como Admin →</button>
+    <div class="admin-err" id="adminErr">Email ou senha incorretos.</div>
+    <div style="margin-top:16px;font-size:11px;color:var(--muted);">Senha padrão: <code style="color:var(--purple)">admin123</code></div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo-area">
+    <div class="logo">Bot<span>Cloud</span></div>
+    <div class="admin-badge">👑 ADMIN</div>
+  </div>
+  <nav>
+    <div class="nav-item active"><span class="nav-icon">📊</span> Overview</div>
+    <div class="nav-item"><span class="nav-icon">👥</span> Clientes</div>
+    <div class="nav-item"><span class="nav-icon">🤖</span> Todos os Bots</div>
+    <div class="nav-item"><span class="nav-icon">💰</span> Financeiro</div>
+    <div class="nav-item"><span class="nav-icon">🔔</span> Alertas</div>
+    <div class="nav-item"><span class="nav-icon">⚙️</span> Configurações</div>
+    <div class="nav-item"><span class="nav-icon">💳</span> Mercado Pago</div>
+    <div class="nav-item" onclick="location.href='dashboard.html'"><span class="nav-icon">↩</span> Área do Cliente</div>
+  </nav>
+  <div class="sidebar-admin">
+    <div class="admin-info">Logado como:<br><b>jefersonrotello@gmail.com</b></div>
+    <button class="logout-btn" onclick="document.getElementById('loginScreen').style.display='flex'">🚪 Sair do admin</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title">Painel Administrativo</div>
+      <div class="page-sub">BotCloud · visão geral da plataforma</div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-ghost">📤 Exportar relatório</button>
+      <button class="btn btn-purple">📧 Enviar comunicado</button>
+      <button class="btn btn-green">+ Criar cliente</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat g">
+        <div class="stat-label">CLIENTES ATIVOS</div>
+        <div class="stat-val">124</div>
+        <div class="stat-sub">+8 essa semana</div>
+      </div>
+      <div class="stat p">
+        <div class="stat-label">RECEITA/MÊS</div>
+        <div class="stat-val">R$9.4k</div>
+        <div class="stat-sub">+R$1.2k vs. mês ant.</div>
+      </div>
+      <div class="stat b">
+        <div class="stat-label">BOTS RODANDO</div>
+        <div class="stat-val">312</div>
+        <div class="stat-sub">de 340 criados</div>
+      </div>
+      <div class="stat y">
+        <div class="stat-label">MSGS HOJE</div>
+        <div class="stat-val">48k</div>
+        <div class="stat-sub">processadas</div>
+      </div>
+      <div class="stat r">
+        <div class="stat-label">EM TRIAL</div>
+        <div class="stat-val">23</div>
+        <div class="stat-sub">convertendo 64%</div>
+      </div>
+    </div>
+
+    <!-- REVENUE -->
+    <div class="revenue-grid">
+      <div class="rev-card">
+        <div class="rev-title">RECEITA MENSAL RECORRENTE</div>
+        <div class="rev-big">R$ 9.432</div>
+        <div class="rev-sub">↑ 14.8% vs. mês anterior · 124 assinantes ativos</div>
+        <div class="rev-chart">
+          <div class="rev-bar" style="height:40%" title="Set"></div>
+          <div class="rev-bar" style="height:55%" title="Out"></div>
+          <div class="rev-bar" style="height:50%" title="Nov"></div>
+          <div class="rev-bar" style="height:70%" title="Dez"></div>
+          <div class="rev-bar" style="height:65%" title="Jan"></div>
+          <div class="rev-bar" style="height:100%" title="Fev"></div>
+        </div>
+      </div>
+      <div class="rev-card">
+        <div class="rev-title">DISTRIBUIÇÃO DE PLANOS</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;">
+              <span>⭐ Pro (R$97)</span><span style="color:var(--blue);font-weight:700">68 clientes</span>
+            </div>
+            <div style="height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;">
+              <div style="height:100%;width:55%;background:var(--blue);border-radius:3px;"></div>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;">
+              <span>🚀 Starter (R$47)</span><span style="color:var(--muted);font-weight:700">38 clientes</span>
+            </div>
+            <div style="height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;">
+              <div style="height:100%;width:31%;background:var(--muted);border-radius:3px;"></div>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;">
+              <span>💎 Enterprise (R$247)</span><span style="color:var(--purple);font-weight:700">18 clientes</span>
+            </div>
+            <div style="height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;">
+              <div style="height:100%;width:14%;background:var(--purple);border-radius:3px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MERCADO PAGO CONFIG -->
+    <div class="mp-section">
+      <div class="mp-title">💳 Configuração Mercado Pago</div>
+      <div class="mp-sub">Configure suas credenciais para receber pagamentos automaticamente via PIX e cartão.</div>
+      <div class="mp-form">
+        <div class="form-group">
+          <label class="form-label">Access Token</label>
+          <input class="form-input" type="password" placeholder="APP_USR-xxxx..." value="APP_USR-demo-token" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Public Key</label>
+          <input class="form-input" placeholder="APP_USR-xxxx..." value="APP_USR-demo-pubkey" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email de recebimento</label>
+          <input class="form-input" value="jefersonrotello@gmail.com" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Webhook URL do MP</label>
+          <input class="form-input" value="https://seudominio.com/api/mp/webhook" readonly style="font-family:var(--mono);font-size:11px;" />
+        </div>
+      </div>
+      <div style="margin-top:16px;display:flex;gap:10px;">
+        <button class="btn btn-green" onclick="alert('Configurações salvas! Conecte ao backend real para persistir.')">💾 Salvar configurações</button>
+        <button class="btn btn-ghost" onclick="alert('Teste de conexão: OK ✅')">🔗 Testar conexão</button>
+      </div>
+    </div>
+
+    <!-- CLIENTS TABLE -->
+    <div class="table-wrap">
+      <div class="table-header">
+        <div class="table-title">👥 Clientes</div>
+        <input class="search-inp" placeholder="🔍 Buscar cliente..." />
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Email</th>
+            <th>Plano</th>
+            <th>Status</th>
+            <th>Bots</th>
+            <th>Receita/mês</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="clientsTable"></tbody>
+      </table>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="section-title">🔔 Alertas Recentes</div>
+    <div class="notif-list">
+      <div class="notif alert">
+        <div class="notif-ico">⚠️</div>
+        <div>
+          <div class="notif-text">Bot do cliente Lucas Ferreira caiu 3x nas últimas 2h</div>
+          <div class="notif-sub">há 12 minutos · Bot "Vendas SP" · Auto-restart ativado</div>
+        </div>
+      </div>
+      <div class="notif success">
+        <div class="notif-ico">💰</div>
+        <div>
+          <div class="notif-text">Novo pagamento recebido: R$97,00 — Plano Pro</div>
+          <div class="notif-sub">há 28 minutos · Camila Santos · Mercado Pago PIX</div>
+        </div>
+      </div>
+      <div class="notif info">
+        <div class="notif-ico">👤</div>
+        <div>
+          <div class="notif-text">Novo cadastro: rafael@dev.com — Plano Starter (trial)</div>
+          <div class="notif-sub">há 1 hora · IP: 187.xx.xx.xx · SP, Brasil</div>
+        </div>
+      </div>
+      <div class="notif success">
+        <div class="notif-ico">📈</div>
+        <div>
+          <div class="notif-text">Conversão trial → Pro: Marcos Oliveira assinou o plano Pro</div>
+          <div class="notif-sub">há 3 horas · R$97/mês · Cobrado via cartão</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ADMIN LOGIN
+function adminLogin() {
+  const email = document.getElementById('adminEmail').value;
+  const pass = document.getElementById('adminPass').value;
+  if (email === 'jefersonrotello@gmail.com' && pass === 'admin123') {
+    document.getElementById('loginScreen').style.display = 'none';
+  } else {
+    document.getElementById('adminErr').style.display = 'block';
+  }
+}
+
+// Check if already logged as admin
+if (localStorage.getItem('botcloud_admin') === 'true') {
+  document.getElementById('loginScreen').style.display = 'none';
+}
+
+// CLIENTS DATA
+const clients = [
+  { name:'Lucas Ferreira', email:'lucas@agencia.com', plan:'pro', status:'active', bots:4, revenue:'R$97' },
+  { name:'Camila Santos', email:'camila@loja.com', plan:'pro', status:'active', bots:2, revenue:'R$97' },
+  { name:'Rafael Costa', email:'rafael@dev.com', plan:'starter', status:'active', bots:1, revenue:'R$47' },
+  { name:'Ana Pereira', email:'ana@empresa.com', plan:'enterprise', status:'active', bots:12, revenue:'R$247' },
+  { name:'João Lima', email:'joao@startup.com', plan:'pro', status:'trial', bots:1, revenue:'R$0' },
+  { name:'Maria Souza', email:'maria@mkt.com', plan:'starter', status:'inactive', bots:0, revenue:'R$0' },
+  { name:'Pedro Alves', email:'pedro@tech.com', plan:'enterprise', status:'active', bots:8, revenue:'R$247' },
+  { name:'Fernanda Ramos', email:'fernanda@shop.com', plan:'pro', status:'active', bots:3, revenue:'R$97' },
+];
+
+const tbody = document.getElementById('clientsTable');
+tbody.innerHTML = clients.map(c => `
+  <tr>
+    <td style="font-weight:700">${c.name}</td>
+    <td style="font-family:var(--mono);font-size:11px;color:var(--muted)">${c.email}</td>
+    <td><span class="badge ${c.plan}">${c.plan.toUpperCase()}</span></td>
+    <td><span class="badge ${c.status}">${c.status==='active'?'Ativo':c.status==='trial'?'Trial':'Inativo'}</span></td>
+    <td style="font-family:var(--mono);font-weight:700;color:var(--blue)">${c.bots}</td>
+    <td style="font-family:var(--mono);font-weight:700;color:var(--green)">${c.revenue}</td>
+    <td style="display:flex;gap:6px;">
+      <button class="action-btn view">Ver</button>
+      ${c.status==='inactive'?`<button class="action-btn unblock">Ativar</button>`:`<button class="action-btn block">Bloquear</button>`}
+    </td>
+  </tr>
+`).join('');
+</script>
+</body>
+</html>

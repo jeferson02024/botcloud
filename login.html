@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entrar — BotCloud</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Cabinet+Grotesk:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050709;--surface:#0c0f16;--surface2:#131824;--border:#1c2538;--green:#00e87a;--green-glow:rgba(0,232,122,0.15);--text:#e8f0ff;--muted:#5a7090;--red:#ff3d55;--mono:'Space Mono',monospace;--sans:'Cabinet Grotesk',sans-serif;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;display:flex;align-items:center;justify-content:center;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);background-size:60px 60px;pointer-events:none;}
+body::after{content:'';position:fixed;top:0;left:50%;transform:translateX(-50%);width:600px;height:400px;background:radial-gradient(circle,rgba(0,232,122,0.07),transparent 70%);pointer-events:none;}
+
+.login-box{width:100%;max-width:420px;position:relative;z-index:1;padding:20px;}
+.logo{font-size:24px;font-weight:900;color:var(--green);letter-spacing:-1px;text-align:center;margin-bottom:32px;display:block;text-decoration:none;}
+.logo span{color:var(--text);}
+
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:36px;}
+.form-title{font-size:26px;font-weight:900;letter-spacing:-0.5px;margin-bottom:6px;}
+.form-sub{color:var(--muted);font-size:14px;margin-bottom:28px;}
+.form-sub a{color:var(--green);text-decoration:none;font-weight:700;}
+
+.form-group{margin-bottom:18px;}
+.form-label{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.form-label a{color:var(--green);text-decoration:none;text-transform:none;font-weight:600;letter-spacing:0;}
+.form-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-family:var(--sans);font-size:14px;color:var(--text);outline:none;transition:all .2s;}
+.form-input:focus{border-color:var(--green);}
+.form-input::placeholder{color:var(--muted);}
+
+.error-alert{background:rgba(255,61,85,.1);border:1px solid rgba(255,61,85,.3);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:16px;display:none;}
+
+.btn-submit{width:100%;padding:13px;border-radius:10px;background:var(--green);color:#000;font-family:var(--sans);font-size:15px;font-weight:900;border:none;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-submit:hover{filter:brightness(1.1);box-shadow:0 0 30px var(--green-glow);}
+
+.divider{text-align:center;margin:20px 0;color:var(--muted);font-size:12px;position:relative;}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;width:40%;height:1px;background:var(--border);}
+.divider::before{left:0;} .divider::after{right:0;}
+
+.admin-link{text-align:center;margin-top:20px;font-size:13px;color:var(--muted);}
+.admin-link a{color:var(--muted);text-decoration:none;transition:color .2s;}
+.admin-link a:hover{color:var(--green);}
+
+.spinner{width:16px;height:16px;border:2px solid rgba(0,0,0,.3);border-top-color:#000;border-radius:50%;animation:spin .6s linear infinite;display:none;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="login-box">
+  <a href="index.html" class="logo">Bot<span>Cloud</span></a>
+  <div class="form-card">
+    <div class="form-title">Bem-vindo de volta</div>
+    <div class="form-sub">Não tem conta? <a href="register.html">Criar grátis →</a></div>
+
+    <div class="error-alert" id="errorAlert">Email ou senha incorretos. Tente novamente.</div>
+
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" id="email" type="email" placeholder="seu@email.com" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Senha <a href="#">Esqueci a senha</a></label>
+      <input class="form-input" id="password" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()" />
+    </div>
+
+    <button class="btn-submit" onclick="login()">
+      <span id="btnText">Entrar →</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
+
+    <div class="divider">ou</div>
+
+    <div class="admin-link">
+      <a href="admin.html">🔐 Acessar painel administrativo</a>
+    </div>
+  </div>
+</div>
+
+<script>
+function login() {
+  const email = document.getElementById('email').value;
+  const pass = document.getElementById('password').value;
+
+  if (!email || !pass) { document.getElementById('errorAlert').style.display='block'; return; }
+
+  document.getElementById('btnText').style.display = 'none';
+  document.getElementById('spinner').style.display = 'block';
+  document.querySelector('.btn-submit').disabled = true;
+  document.getElementById('errorAlert').style.display = 'none';
+
+  setTimeout(() => {
+    // Admin login
+    if (email === 'jefersonrotello@gmail.com' && pass === 'admin123') {
+      localStorage.setItem('botcloud_admin', 'true');
+      location.href = 'admin.html';
+      return;
+    }
+
+    // User login (demo - conectar ao backend)
+    const user = localStorage.getItem('botcloud_user');
+    if (user) {
+      location.href = 'dashboard.html';
+    } else {
+      document.getElementById('btnText').style.display = 'inline';
+      document.getElementById('spinner').style.display = 'none';
+      document.querySelector('.btn-submit').disabled = false;
+      document.getElementById('errorAlert').style.display = 'block';
+    }
+  }, 1500);
+}
+</script>
+</body>
+</html>
